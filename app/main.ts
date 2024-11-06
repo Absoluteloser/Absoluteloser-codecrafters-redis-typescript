@@ -25,6 +25,14 @@ const server: net.Server = net.createServer((connection: net.Socket) => {
         if (command.includes("PING")) {
             connection.write("+PONG\r\n")
         }
+        //$<length>\r\n<data>\r\n
+        if (command.includes("ECHO")) {
+            const args = data.toString().split('\r\n');
+            //converts the string to array 
+            const txt = args[4];
+            connection.write(`$${txt.length}\r\n${txt}\r\n`);
+            //"*2\r\n$4\r\nECHO\r\n$6\r\nbanana\r\n"
+        }
     })
 });
 server.listen(6379, "127.0.0.1");
