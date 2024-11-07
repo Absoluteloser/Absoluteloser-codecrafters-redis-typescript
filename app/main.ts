@@ -1,13 +1,14 @@
 import * as net from "net";
 
 // You can use print statements as follows for debugging, they'll be visible when running tests.
+const store = new Map<string, string>();
 console.log("Logs from your program will appear here!");
-const noOfOccurences = (str: string, findstr: string):number => {
+const noOfOccurences = (str: string, findstr: string): number => {
     const idx = str.indexOf(findstr)
-    let count=0
+    let count = 0
     while (idx !== -1) {
         count++
-        str.indexOf(findstr,idx+findstr.length)
+        str.indexOf(findstr, idx + findstr.length)
     }
     return count
 }
@@ -32,6 +33,26 @@ const server: net.Server = net.createServer((connection: net.Socket) => {
             const txt = args[4];
             connection.write(`$${txt.length}\r\n${txt}\r\n`);
             //"*2\r\n$4\r\nECHO\r\n$6\r\nbanana\r\n"
+        }
+        if (command.includes("SET")) {
+            const tostring: string = data.toString();
+            const removedspaces: string[] = tostring.split("\r\n");
+            const key: string = removedspaces[4];
+            const value: string = removedspaces[6];
+            store.set(key, value);
+            connection.write(`+OK\r\n`);
+        }
+        if (command.includes("GET")) {
+            const commandarr: string[] = command.split("\r\n");
+            const key: string = commandarr[4];
+            const value = store.get(key);
+            if (value !== undefined) {
+                connection.write(`$${value.length}\r\n${value}\r\n`);
+            }
+            else {
+                connection.write("$-1\r\n");
+            }
+
         }
     })
 });
